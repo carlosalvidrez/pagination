@@ -14,34 +14,27 @@ function getConnectionId(connection) {
     ) {
       return connection._stream.socket._base_url;
     }
-
     if (typeof connection._stream.rawUrl === 'string' && connection._stream.rawUrl.length > 0) {
       return connection._stream.rawUrl;
     }
   }
-  
   return 'unknown';
 }
 
 function getSubscriptionCount(id, connection) {
   const connectionId = getConnectionId(connection);
-  
   if (!Counts.hasOwnProperty(connectionId)) {
       Counts[connectionId] = new Meteor.Collection('pagination-counts', { connection })
   }
-  
   const doc = Counts[connectionId].findOne(id);
-
   return (doc && doc.count) || 0;
 }
 
 class PaginationFactory {
   constructor(collection, settingsIn = {}) {
     if (!(this instanceof Meteor.Pagination)) {
-      // eslint-disable-next-line max-len
       throw new Meteor.Error(4000, 'The Meteor.Pagination instance has to be initiated with `new`');
     }
-
     this.connection = settingsIn && settingsIn.connection ? settingsIn.connection : Meteor.connection;
     this.collection = collection;
     this.settings = new ReactiveDict();
@@ -132,17 +125,13 @@ class PaginationFactory {
     if (!Tracker.active) {
       return;
     }
-
     const currentComputationId = Tracker.currentComputation._id;
-
     if (this._activeObservers.hasOwnProperty(currentComputationId)) {
       return;
     }
-
     if (_.isEmpty(this._activeObservers) && !this.subscription) {
       this.settings.set('resubscribe', Date.now());
     }
-
     this._activeObservers[currentComputationId] = true;
 
     Tracker.currentComputation.onStop((c) => {
@@ -162,7 +151,6 @@ class PaginationFactory {
 
       if (c.stopped && this._activeObservers.hasOwnProperty(c._id)) {
         delete this._activeObservers[c._id];
-
         // unsubscribe if all computations were stopped
         if (_.isEmpty(this._activeObservers)) {
           if (this.debug()) {
@@ -172,10 +160,8 @@ class PaginationFactory {
               'unsubscribe'
             );
           }
-
           if (this.subscription) {
             this.subscription.stop();
-
             this.subscription = null;
             this.settings.set('ready', false);
           }
@@ -267,16 +253,13 @@ class PaginationFactory {
 
     if (!this.subscription) {
       this.settings.get('resubscribe');
-
       return [];
     }
 
     if (this.ready()) {
       const totalItems = getSubscriptionCount(`sub_${this.subscription.subscriptionId}`, this.connection);
       this.settings.set('totalItems', totalItems);
-
       if (this.currentPage() > 1 && totalItems <= this.perPage() * this.currentPage()) {
-        // move to last page available
         this.currentPage(this.totalPages());
       }
     }

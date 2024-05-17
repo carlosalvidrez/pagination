@@ -4,7 +4,7 @@ import { check, Match } from 'meteor/check';
 
 const countCollectionName = 'pagination-counts';
 
-export function publishPagination(collection, settingsIn) {
+export async function publishPagination(collection, settingsIn) {
   const settings = _.extend(
     {
       name: collection._name,
@@ -31,7 +31,7 @@ export function publishPagination(collection, settingsIn) {
     settings.countInterval = 50;
   }
 
-  Meteor.publish(settings.name, function addPub(query = {}, optionsInput = {}) {
+  await Meteor.publish(settings.name, async function addPub(query = {}, optionsInput = {}) {
     check(query, Match.Optional(Object));
     check(optionsInput, Match.Optional(Object));
 
@@ -88,7 +88,7 @@ export function publishPagination(collection, settingsIn) {
 
     if (!options.reactive) {
       const subscriptionId = `sub_${self._subscriptionId}`;
-      const count = collection.find(findQuery, {fields: {_id: 1}}).count();
+      const count = await collection.find(findQuery, {fields: {_id: 1}}).countAsync();
       const docs = collection.find(findQuery, options).fetch();
 
       self.added(countCollectionName, subscriptionId, {count: count});
@@ -102,18 +102,19 @@ export function publishPagination(collection, settingsIn) {
       const subscriptionId = `sub_${self._subscriptionId}`;
       const countCursor = collection.find(findQuery, {fields: {_id: 1}});
 
-      self.added(countCollectionName, subscriptionId, {count: countCursor.count()});
+      self.added(countCollectionName, subscriptionId, {count: await countCursor.countAsync()});
 
-      const updateCount = _.throttle(Meteor.bindEnvironment(()=> {
-        self.changed(countCollectionName, subscriptionId, {count: countCursor.count()});
+      const updateCount = _.throttle(Meteor.bindEnvironment(async ()=> {
+        self.changed(countCollectionName, subscriptionId, {count: await countCursor.countAsync()});
       }), 50);
+
       const countTimer = Meteor.setInterval(function() {
         updateCount();
       }, settings.countInterval);
-      const handle = collection.find(findQuery, options).observeChanges({
+
+      const handle = await collection.find(findQuery, options).observeChanges({
         added(id, fields) {
           self.added(collection._name, id, fields);
-
           self.changed(collection._name, id, {[subscriptionId]: 1});
           updateCount();
         },
@@ -126,9 +127,15 @@ export function publishPagination(collection, settingsIn) {
         }
       });
 
-      self.onStop(() => {
-        Meteor.clearTimeout(countTimer);
-        handle.stop();
+      self.onStop(async () => {
+        await Meteor.clearTimeout(countTimer);
+        //await handle.stop();
+        if (handle && typeof handle.stop === 'function') {
+            await handle.stop();
+        } else {
+            console.error('handle is not defined or does not have a stop method');
+        }
+
       });
     }
 

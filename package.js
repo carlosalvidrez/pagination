@@ -1,5 +1,5 @@
 Package.describe({
-  name: 'balines:pagination',
+  name: 'carlosalvidrez:pagination',
   version: '0.0.1',
   summary: 'Meteor 3.0 pagination, forked from kurounin:pagination',
   git: 'https://github.com/carlosalvidrez/pagination.git',
@@ -13,7 +13,7 @@ Package.onUse((api) => {
         'meteor-base',
         'check',
         'underscore',
-        'mongo',
+        //'mongo',
     ]);
     api.mainModule('server/pagination.js', 'server');
     api.use([
@@ -24,10 +24,9 @@ Package.onUse((api) => {
     api.mainModule('client/pagination.js', 'client');
 });
 
-
-// Package.onTest(function(api) {
-//   api.use('ecmascript');
-//   api.use('tinytest');
-//   api.use('balines:pagination');
-//   api.mainModule('pagination-tests.js');
-// });
+Package.onTest(function(api) {
+  api.use('ecmascript');
+  api.use('tinytest');
+  api.use('balines:pagination');
+  api.mainModule('pagination-tests.js');
+});
