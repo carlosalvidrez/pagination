@@ -85,7 +85,7 @@ class PaginationFactory {
 
     this._activeObservers = {};
 
-    Tracker.autorun(() => {
+    Tracker.autorun(async () => {
       const options = {
         fields: this.fields(),
         sort: this.sort(),
@@ -110,12 +110,12 @@ class PaginationFactory {
 
       this.settings.set('ready', false);
 
-      this.subscription = this.connection.subscribe(
+      this.subscription = await this.connection.subscribe(
         this.settings.get('name'),
         this.filters(),
         options,
-        () => {
-          this.settings.set('ready', true);
+        async () => {
+          await this.settings.set('ready', true);
         }
       );
     });
