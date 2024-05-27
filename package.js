@@ -10,7 +10,7 @@ Package.onUse((api) => {
     api.versionsFrom('2.16');
     api.use([
         'ecmascript',
-        'meteor-base',
+        //'meteor-base',
         'check',
         'underscore',
         //'mongo',
