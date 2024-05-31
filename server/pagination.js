@@ -48,7 +48,7 @@ export async function publishPagination(collection, settingsIn) {
       filters.push(settings.filters);
     }
 
-    const dynamic_filters = settings.dynamic_filters.call(self);
+    const dynamic_filters = await settings.dynamic_filters.call(self);
 
     if (typeof dynamic_filters === 'object') {
       if (!_.isEmpty(dynamic_filters)) {
@@ -60,11 +60,11 @@ export async function publishPagination(collection, settingsIn) {
     }
 
     if (typeof settings.transform_filters === 'function') {
-      filters = settings.transform_filters.call(self, filters, options);
+      filters = await settings.transform_filters.call(self, filters, options);
     }
 
     if (typeof settings.transform_options === 'function') {
-      options = settings.transform_options.call(self, filters, options);
+      options = await settings.transform_options.call(self, filters, options);
     }
 
     if (filters.length > 0) {
