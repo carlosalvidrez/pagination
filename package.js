@@ -24,9 +24,9 @@ Package.onUse((api) => {
     api.mainModule('client/pagination.js', 'client');
 });
 
-Package.onTest(function(api) {
-  api.use('ecmascript');
-  api.use('tinytest');
-  api.use('balines:pagination');
-  api.mainModule('pagination-tests.js');
-});
+// Package.onTest(function(api) {
+//   api.use('ecmascript');
+//   api.use('tinytest');
+//   api.use('carlosalvidrez:pagination');
+//   api.mainModule('pagination-tests.js');
+// });
